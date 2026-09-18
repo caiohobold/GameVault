@@ -1,0 +1,54 @@
+spring:
+  application:
+    name: gamevault
+
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/gamevault}
+    username: ${DB_USERNAME:gamevault}
+    password: ${DB_PASSWORD:gamevault}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+        jdbc:
+          time_zone: America/Sao_Paulo
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+
+  jackson:
+    default-property-inclusion: non_null
+    time-zone: America/Sao_Paulo
+
+server:
+  port: ${SERVER_PORT:8080}
+  error:
+    include-message: always
+    include-binding-errors: always
+
+gamevault:
+  jwt:
+    secret: ${JWT_SECRET:troque-este-segredo-por-uma-chave-de-no-minimo-32-caracteres}
+    expiracao: ${JWT_EXPIRACAO:86400000}
+  cors:
+    origens: ${CORS_ORIGINS:http://localhost:5173}
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+    tags-sorter: alpha
+  api-docs:
+    path: /v3/api-docs
+
+logging:
+  level:
+    br.edu.unesc.gamevault: DEBUG
+    org.springframework.security: INFO
