@@ -7,9 +7,6 @@ import jakarta.validation.constraints.Size;
 
 public record AvaliacaoRequest(
 
-        @NotNull(message = "O usuário é obrigatório")
-        Long usuarioId,
-
         @NotNull(message = "O jogo é obrigatório")
         Long jogoId,
 

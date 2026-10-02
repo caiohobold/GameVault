@@ -35,6 +35,14 @@ public class BibliotecaService {
     }
 
     @Transactional(readOnly = true)
+    public BibliotecaResponse buscarPorIdDoUsuario(Long id, Long solicitanteId) {
+        Biblioteca entrada = buscarEntidade(id);
+        validarDono(entrada, solicitanteId);
+
+        return bibliotecaMapper.paraResposta(entrada);
+    }
+
+    @Transactional(readOnly = true)
     public BibliotecaResponse buscarPorId(Long id) {
         return bibliotecaMapper.paraResposta(buscarEntidade(id));
     }
@@ -81,10 +89,6 @@ public class BibliotecaService {
     }
 
     private void validarDono(Biblioteca entrada, Long solicitanteId) {
-        if (solicitanteId == null) {
-            return;
-        }
-
         Usuario solicitante = usuarioService.buscarEntidade(solicitanteId);
 
         if (solicitante.getRole() == Role.ADMIN) {

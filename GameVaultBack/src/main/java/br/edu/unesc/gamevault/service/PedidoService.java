@@ -54,9 +54,22 @@ public class PedidoService {
         return pedidoMapper.paraResposta(buscarComItens(id));
     }
 
+    /**
+     * Busca o pedido garantindo que ele pertence a quem está pedindo.
+     * Sem isso, qualquer usuário autenticado leria o pedido de outro
+     * apenas trocando o id na URL.
+     */
+    @Transactional(readOnly = true)
+    public PedidoResponse buscarPorIdDoUsuario(Long id, Long solicitanteId) {
+        Pedido pedido = buscarComItens(id);
+        validarDono(pedido, solicitanteId);
+
+        return pedidoMapper.paraResposta(pedido);
+    }
+
     @Transactional
-    public PedidoResponse criar(PedidoRequest requisicao) {
-        Usuario usuario = usuarioService.buscarEntidade(requisicao.usuarioId());
+    public PedidoResponse criar(PedidoRequest requisicao, Long usuarioId) {
+        Usuario usuario = usuarioService.buscarEntidade(usuarioId);
         LocalDateTime agora = LocalDateTime.now();
 
         Pedido pedido = Pedido.builder()
@@ -179,10 +192,6 @@ public class PedidoService {
     }
 
     private void validarDono(Pedido pedido, Long solicitanteId) {
-        if (solicitanteId == null) {
-            return;
-        }
-
         Usuario solicitante = usuarioService.buscarEntidade(solicitanteId);
 
         if (solicitante.getRole() == Role.ADMIN) {

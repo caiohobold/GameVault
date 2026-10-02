@@ -10,6 +10,8 @@ import br.edu.unesc.gamevault.dto.response.ListaDesejosResponse;
 import br.edu.unesc.gamevault.entity.Jogo;
 import br.edu.unesc.gamevault.entity.ListaDesejos;
 import br.edu.unesc.gamevault.entity.Usuario;
+import br.edu.unesc.gamevault.entity.enums.Role;
+import br.edu.unesc.gamevault.exception.AcessoNegadoException;
 import br.edu.unesc.gamevault.exception.RecursoDuplicadoException;
 import br.edu.unesc.gamevault.exception.RecursoNaoEncontradoException;
 import br.edu.unesc.gamevault.exception.RegraDeNegocioException;
@@ -37,8 +39,8 @@ public class ListaDesejosService {
     }
 
     @Transactional
-    public ListaDesejosResponse adicionar(ListaDesejosRequest requisicao) {
-        Usuario usuario = usuarioService.buscarEntidade(requisicao.usuarioId());
+    public ListaDesejosResponse adicionar(ListaDesejosRequest requisicao, Long usuarioId) {
+        Usuario usuario = usuarioService.buscarEntidade(usuarioId);
         Jogo jogo = jogoService.buscarEntidadeParaCompra(requisicao.jogoId());
 
         if (listaDesejosRepository.existsByUsuario_IdAndJogo_Id(usuario.getId(), jogo.getId())) {
@@ -61,9 +63,11 @@ public class ListaDesejosService {
     }
 
     @Transactional
-    public void remover(Long id) {
+    public void remover(Long id, Long solicitanteId) {
         ListaDesejos item = listaDesejosRepository.findById(id)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Item da lista de desejos", id));
+
+        validarDono(item, solicitanteId);
 
         listaDesejosRepository.delete(item);
         log.info("Item {} removido da lista de desejos", id);
@@ -77,5 +81,19 @@ public class ListaDesejosService {
 
         listaDesejosRepository.delete(item);
         log.info("Jogo {} removido da lista de desejos do usuário {}", jogoId, usuarioId);
+    }
+
+    private void validarDono(ListaDesejos item, Long solicitanteId) {
+        Usuario solicitante = usuarioService.buscarEntidade(solicitanteId);
+
+        if (solicitante.getRole() == Role.ADMIN) {
+            return;
+        }
+
+        if (!item.getUsuario().getId().equals(solicitanteId)) {
+            throw new AcessoNegadoException(
+                    "O usuário %d não pode alterar a lista de desejos de outro usuário"
+                            .formatted(solicitanteId));
+        }
     }
 }

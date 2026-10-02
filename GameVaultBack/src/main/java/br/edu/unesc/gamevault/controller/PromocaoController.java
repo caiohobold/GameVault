@@ -7,6 +7,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -19,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import br.edu.unesc.gamevault.dto.request.PromocaoRequest;
 import br.edu.unesc.gamevault.dto.response.PromocaoResponse;
+import br.edu.unesc.gamevault.security.UsuarioAutenticado;
 import br.edu.unesc.gamevault.service.PromocaoService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -44,26 +47,29 @@ public class PromocaoController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'PUBLICADORA')")
     public ResponseEntity<PromocaoResponse> criar(
-            @RequestParam(required = false) Long solicitanteId,
+            @AuthenticationPrincipal UsuarioAutenticado autenticado,
             @Valid @RequestBody PromocaoRequest requisicao) {
-        PromocaoResponse criada = promocaoService.criar(requisicao, solicitanteId);
+        PromocaoResponse criada = promocaoService.criar(requisicao, autenticado.getId());
         return ResponseEntity.created(URI.create("/promocoes/" + criada.id())).body(criada);
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'PUBLICADORA')")
     public ResponseEntity<PromocaoResponse> atualizar(
             @PathVariable Long id,
-            @RequestParam(required = false) Long solicitanteId,
+            @AuthenticationPrincipal UsuarioAutenticado autenticado,
             @Valid @RequestBody PromocaoRequest requisicao) {
-        return ResponseEntity.ok(promocaoService.atualizar(id, requisicao, solicitanteId));
+        return ResponseEntity.ok(promocaoService.atualizar(id, requisicao, autenticado.getId()));
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'PUBLICADORA')")
     public ResponseEntity<Void> excluir(
             @PathVariable Long id,
-            @RequestParam(required = false) Long solicitanteId) {
-        promocaoService.excluir(id, solicitanteId);
+            @AuthenticationPrincipal UsuarioAutenticado autenticado) {
+        promocaoService.excluir(id, autenticado.getId());
         return ResponseEntity.noContent().build();
     }
 }

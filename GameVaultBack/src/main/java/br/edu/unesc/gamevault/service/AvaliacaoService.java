@@ -50,8 +50,8 @@ public class AvaliacaoService {
     }
 
     @Transactional
-    public AvaliacaoResponse criar(AvaliacaoRequest requisicao) {
-        Usuario usuario = usuarioService.buscarEntidade(requisicao.usuarioId());
+    public AvaliacaoResponse criar(AvaliacaoRequest requisicao, Long usuarioId) {
+        Usuario usuario = usuarioService.buscarEntidade(usuarioId);
         Jogo jogo = jogoService.buscarEntidade(requisicao.jogoId());
 
         if (!bibliotecaService.usuarioPossui(usuario.getId(), jogo.getId())) {
@@ -125,10 +125,6 @@ public class AvaliacaoService {
     }
 
     private void validarAutor(Avaliacao avaliacao, Long solicitanteId) {
-        if (solicitanteId == null) {
-            return;
-        }
-
         Usuario solicitante = usuarioService.buscarEntidade(solicitanteId);
 
         if (solicitante.getRole() == Role.ADMIN) {
