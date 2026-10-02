@@ -5,8 +5,13 @@ import java.util.Map;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -81,6 +86,17 @@ public class GlobalExceptionHandler {
         return construir(HttpStatus.BAD_REQUEST, "Parâmetro inválido", mensagem, requisicao);
     }
 
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ErroResposta> tratarCorpoIlegivel(
+            HttpMessageNotReadableException excecao, HttpServletRequest requisicao) {
+        log.warn("Corpo de requisicao ilegivel em {}: {}", requisicao.getRequestURI(),
+                excecao.getMessage());
+
+        return construir(HttpStatus.BAD_REQUEST, "Corpo inválido",
+                "O corpo da requisição não é um JSON válido ou tem campos com tipo incompatível",
+                requisicao);
+    }
+
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ErroResposta> tratarIntegridade(
             DataIntegrityViolationException excecao, HttpServletRequest requisicao) {
@@ -88,6 +104,43 @@ public class GlobalExceptionHandler {
 
         return construir(HttpStatus.CONFLICT, "Conflito de dados",
                 "A operação viola uma restrição de integridade do banco de dados", requisicao);
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ErroResposta> tratarAcessoNegadoDoSpring(
+            AccessDeniedException excecao, HttpServletRequest requisicao) {
+        log.warn("Acesso negado por regra de autorizacao em {}: {}", requisicao.getRequestURI(),
+                excecao.getMessage());
+
+        return construir(HttpStatus.FORBIDDEN, "Acesso negado",
+                "O seu perfil não tem permissão para acessar este recurso", requisicao);
+    }
+
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<ErroResposta> tratarCredenciaisInvalidas(
+            BadCredentialsException excecao, HttpServletRequest requisicao) {
+        log.warn("Tentativa de login com credenciais invalidas em {}", requisicao.getRequestURI());
+
+        return construir(HttpStatus.UNAUTHORIZED, "Credenciais inválidas",
+                "E-mail ou senha incorretos", requisicao);
+    }
+
+    @ExceptionHandler(DisabledException.class)
+    public ResponseEntity<ErroResposta> tratarContaDesativada(
+            DisabledException excecao, HttpServletRequest requisicao) {
+        log.warn("Tentativa de login em conta desativada em {}", requisicao.getRequestURI());
+
+        return construir(HttpStatus.FORBIDDEN, "Conta desativada",
+                "Esta conta está desativada e não pode ser utilizada", requisicao);
+    }
+
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<ErroResposta> tratarFalhaDeAutenticacao(
+            AuthenticationException excecao, HttpServletRequest requisicao) {
+        log.warn("Falha de autenticacao em {}: {}", requisicao.getRequestURI(), excecao.getMessage());
+
+        return construir(HttpStatus.UNAUTHORIZED, "Não autenticado",
+                "Não foi possível autenticar a requisição", requisicao);
     }
 
     @ExceptionHandler(Exception.class)

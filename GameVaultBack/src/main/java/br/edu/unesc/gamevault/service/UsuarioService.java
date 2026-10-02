@@ -14,6 +14,7 @@ import br.edu.unesc.gamevault.dto.request.UsuarioRequest;
 import br.edu.unesc.gamevault.dto.response.UsuarioResponse;
 import br.edu.unesc.gamevault.entity.Usuario;
 import br.edu.unesc.gamevault.entity.enums.Role;
+import br.edu.unesc.gamevault.exception.AcessoNegadoException;
 import br.edu.unesc.gamevault.exception.RecursoDuplicadoException;
 import br.edu.unesc.gamevault.exception.RecursoNaoEncontradoException;
 import br.edu.unesc.gamevault.exception.RegraDeNegocioException;
@@ -78,13 +79,24 @@ public class UsuarioService {
     }
 
     @Transactional
-    public UsuarioResponse atualizar(Long id, UsuarioAtualizacaoRequest requisicao) {
+    public UsuarioResponse atualizar(Long id, UsuarioAtualizacaoRequest requisicao,
+            Long solicitanteId) {
         Usuario usuario = buscarEntidade(id);
+        Usuario solicitante = buscarEntidade(solicitanteId);
         String email = normalizarEmail(requisicao.email());
 
         if (usuarioRepository.existsByEmailAndIdNot(email, id)) {
             throw new RecursoDuplicadoException("Já existe um usuário cadastrado com o e-mail '%s'"
                     .formatted(email));
+        }
+
+        boolean mudouPapel = requisicao.role() != usuario.getRole();
+
+        // Sem esta checagem um USUARIO se promoveria a ADMIN editando o
+        // proprio cadastro, que ele tem permissao de fazer.
+        if (mudouPapel && solicitante.getRole() != Role.ADMIN) {
+            throw new AcessoNegadoException(
+                    "Somente um administrador pode alterar o papel de um usuário");
         }
 
         usuario.setNome(requisicao.nome().trim());

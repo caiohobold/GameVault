@@ -131,10 +131,6 @@ public class PromocaoService {
     }
 
     private void validarDonoDoJogo(Jogo jogo, Long solicitanteId) {
-        if (solicitanteId == null) {
-            return;
-        }
-
         Usuario solicitante = usuarioService.buscarEntidade(solicitanteId);
 
         if (solicitante.getRole() == Role.ADMIN) {

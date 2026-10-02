@@ -62,8 +62,8 @@ public class JogoService {
     }
 
     @Transactional
-    public JogoResponse criar(JogoRequest requisicao) {
-        Usuario publicadora = usuarioService.buscarEntidade(requisicao.publicadoraId());
+    public JogoResponse criar(JogoRequest requisicao, Long solicitanteId) {
+        Usuario publicadora = resolverPublicadora(requisicao.publicadoraId(), solicitanteId);
         validarPapelDePublicadora(publicadora);
 
         Jogo jogo = Jogo.builder()
@@ -90,7 +90,7 @@ public class JogoService {
         Jogo jogo = buscarEntidade(id);
         validarDono(jogo, solicitanteId);
 
-        Usuario publicadora = usuarioService.buscarEntidade(requisicao.publicadoraId());
+        Usuario publicadora = resolverPublicadoraNaEdicao(jogo, requisicao.publicadoraId(), solicitanteId);
         validarPapelDePublicadora(publicadora);
 
         jogo.setTitulo(requisicao.titulo().trim());
@@ -170,10 +170,6 @@ public class JogoService {
     }
 
     private void validarDono(Jogo jogo, Long solicitanteId) {
-        if (solicitanteId == null) {
-            return;
-        }
-
         Usuario solicitante = usuarioService.buscarEntidade(solicitanteId);
 
         if (solicitante.getRole() == Role.ADMIN) {
@@ -184,6 +180,42 @@ public class JogoService {
             throw new AcessoNegadoException(
                     "O usuário %d não é a publicadora do jogo '%s'".formatted(solicitanteId, jogo.getTitulo()));
         }
+    }
+
+    /**
+     * Define de quem é o jogo que está sendo criado. Uma PUBLICADORA só publica
+     * em nome próprio — o campo publicadoraId do corpo é ignorado para ela, o que
+     * impede cadastrar jogo no nome de outra. O ADMIN precisa informar o campo,
+     * porque não publica em nome próprio.
+     */
+    private Usuario resolverPublicadora(Long publicadoraIdInformada, Long solicitanteId) {
+        Usuario solicitante = usuarioService.buscarEntidade(solicitanteId);
+
+        if (solicitante.getRole() != Role.ADMIN) {
+            return solicitante;
+        }
+
+        if (publicadoraIdInformada == null) {
+            throw new RegraDeNegocioException(
+                    "Informe o campo 'publicadoraId': o administrador precisa dizer de quem é o jogo");
+        }
+
+        return usuarioService.buscarEntidade(publicadoraIdInformada);
+    }
+
+    /**
+     * Na edição, só o ADMIN pode transferir o jogo para outra publicadora.
+     * Para os demais, a publicadora atual é mantida.
+     */
+    private Usuario resolverPublicadoraNaEdicao(Jogo jogo, Long publicadoraIdInformada,
+            Long solicitanteId) {
+        Usuario solicitante = usuarioService.buscarEntidade(solicitanteId);
+
+        if (solicitante.getRole() == Role.ADMIN && publicadoraIdInformada != null) {
+            return usuarioService.buscarEntidade(publicadoraIdInformada);
+        }
+
+        return jogo.getPublicadora();
     }
 
     private void validarPapelDePublicadora(Usuario usuario) {

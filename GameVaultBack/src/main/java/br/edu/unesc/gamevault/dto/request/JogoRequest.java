@@ -25,7 +25,10 @@ public record JogoRequest(
 
         LocalDate dataLancamento,
 
-        @NotNull(message = "A publicadora é obrigatória")
+        /**
+         * Só é lido quando quem chama é ADMIN. Para uma PUBLICADORA o jogo é
+         * sempre registrado em nome dela própria, independente do que vier aqui.
+         */
         Long publicadoraId,
 
         @NotEmpty(message = "Informe ao menos uma categoria")

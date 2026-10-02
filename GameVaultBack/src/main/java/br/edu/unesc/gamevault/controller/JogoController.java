@@ -7,6 +7,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -22,6 +24,7 @@ import br.edu.unesc.gamevault.dto.request.JogoRequest;
 import br.edu.unesc.gamevault.dto.response.AvaliacaoResponse;
 import br.edu.unesc.gamevault.dto.response.JogoResponse;
 import br.edu.unesc.gamevault.dto.response.VendaResponse;
+import br.edu.unesc.gamevault.security.UsuarioAutenticado;
 import br.edu.unesc.gamevault.service.AvaliacaoService;
 import br.edu.unesc.gamevault.service.JogoService;
 import jakarta.validation.Valid;
@@ -43,17 +46,19 @@ public class JogoController {
     }
 
     @GetMapping("/meus")
+    @PreAuthorize("hasAnyRole('ADMIN', 'PUBLICADORA')")
     public ResponseEntity<Page<JogoResponse>> listarDaPublicadora(
-            @RequestParam Long publicadoraId,
+            @AuthenticationPrincipal UsuarioAutenticado autenticado,
             @PageableDefault(size = 20, sort = "titulo", direction = Sort.Direction.ASC) Pageable paginacao) {
-        return ResponseEntity.ok(jogoService.listarDaPublicadora(publicadoraId, paginacao));
+        return ResponseEntity.ok(jogoService.listarDaPublicadora(autenticado.getId(), paginacao));
     }
 
     @GetMapping("/meus/vendas")
+    @PreAuthorize("hasAnyRole('ADMIN', 'PUBLICADORA')")
     public ResponseEntity<Page<VendaResponse>> resumirVendas(
-            @RequestParam Long publicadoraId,
+            @AuthenticationPrincipal UsuarioAutenticado autenticado,
             @PageableDefault(size = 20) Pageable paginacao) {
-        return ResponseEntity.ok(jogoService.resumirVendas(publicadoraId, paginacao));
+        return ResponseEntity.ok(jogoService.resumirVendas(autenticado.getId(), paginacao));
     }
 
     @GetMapping("/{id}")
@@ -69,31 +74,37 @@ public class JogoController {
     }
 
     @PostMapping
-    public ResponseEntity<JogoResponse> criar(@Valid @RequestBody JogoRequest requisicao) {
-        JogoResponse criado = jogoService.criar(requisicao);
+    @PreAuthorize("hasAnyRole('ADMIN', 'PUBLICADORA')")
+    public ResponseEntity<JogoResponse> criar(
+            @AuthenticationPrincipal UsuarioAutenticado autenticado,
+            @Valid @RequestBody JogoRequest requisicao) {
+        JogoResponse criado = jogoService.criar(requisicao, autenticado.getId());
         return ResponseEntity.created(URI.create("/jogos/" + criado.id())).body(criado);
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'PUBLICADORA')")
     public ResponseEntity<JogoResponse> atualizar(
             @PathVariable Long id,
-            @RequestParam(required = false) Long solicitanteId,
+            @AuthenticationPrincipal UsuarioAutenticado autenticado,
             @Valid @RequestBody JogoRequest requisicao) {
-        return ResponseEntity.ok(jogoService.atualizar(id, requisicao, solicitanteId));
+        return ResponseEntity.ok(jogoService.atualizar(id, requisicao, autenticado.getId()));
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'PUBLICADORA')")
     public ResponseEntity<Void> desativar(
             @PathVariable Long id,
-            @RequestParam(required = false) Long solicitanteId) {
-        jogoService.desativar(id, solicitanteId);
+            @AuthenticationPrincipal UsuarioAutenticado autenticado) {
+        jogoService.desativar(id, autenticado.getId());
         return ResponseEntity.noContent().build();
     }
 
     @PatchMapping("/{id}/reativar")
+    @PreAuthorize("hasAnyRole('ADMIN', 'PUBLICADORA')")
     public ResponseEntity<JogoResponse> reativar(
             @PathVariable Long id,
-            @RequestParam(required = false) Long solicitanteId) {
-        return ResponseEntity.ok(jogoService.reativar(id, solicitanteId));
+            @AuthenticationPrincipal UsuarioAutenticado autenticado) {
+        return ResponseEntity.ok(jogoService.reativar(id, autenticado.getId()));
     }
 }
