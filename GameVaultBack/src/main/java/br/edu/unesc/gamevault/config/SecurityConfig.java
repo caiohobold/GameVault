@@ -57,7 +57,7 @@ public class SecurityConfig {
 
                         // Catálogo é público: vitrine da loja
                         .requestMatchers(HttpMethod.GET, "/jogos", "/jogos/*", "/jogos/*/avaliacoes",
-                                "/categorias", "/categorias/*")
+                                "/categorias", "/categorias/*", "/promocoes", "/promocoes/*")
                         .permitAll()
 
                         .anyRequest().authenticated())
