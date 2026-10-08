@@ -26,15 +26,26 @@ import br.edu.unesc.gamevault.dto.response.UsuarioResponse;
 import br.edu.unesc.gamevault.entity.enums.Role;
 import br.edu.unesc.gamevault.security.UsuarioAutenticado;
 import br.edu.unesc.gamevault.service.UsuarioService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+@Tag(name = "Usuários", description = "Gestão de contas. Listar e desativar é do ADMIN; ver e editar o próprio cadastro é do dono.")
 @RestController
 @RequestMapping("/usuarios")
 @RequiredArgsConstructor
 public class UsuarioController {
     private final UsuarioService usuarioService;
 
+    @Operation(summary = "Lista os usuários da plataforma",
+            description = "Exclusivo do ADMIN. Permite filtrar por nome, por papel e por contas ativas.")
+    @ApiResponse(responseCode = "200", description = "Página de usuários, sem o campo senha")
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Page<UsuarioResponse>> listar(
@@ -45,12 +56,25 @@ public class UsuarioController {
         return ResponseEntity.ok(usuarioService.listar(nome, role, apenasAtivos, paginacao));
     }
 
+    @Operation(summary = "Busca um usuário pelo id",
+            description = "O ADMIN consulta qualquer usuário; os demais, apenas o próprio cadastro.")
+    @ApiResponse(responseCode = "200", description = "Usuário encontrado")
+    @ApiResponse(responseCode = "404", description = "Usuário inexistente",
+            content = @Content(schema = @Schema(ref = "#/components/schemas/ErroResposta")))
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN') or #id == principal.id")
     public ResponseEntity<UsuarioResponse> buscarPorId(@PathVariable Long id) {
         return ResponseEntity.ok(usuarioService.buscarPorId(id));
     }
 
+    @Operation(summary = "Cria um usuário com papel definido",
+            description = """
+                    Exclusivo do ADMIN e o único caminho para criar outra conta `ADMIN`.
+                    Para auto-cadastro público, use `POST /auth/registrar`.
+                    """)
+    @ApiResponse(responseCode = "201", description = "Usuário criado")
+    @ApiResponse(responseCode = "409", description = "E-mail já cadastrado",
+            content = @Content(schema = @Schema(ref = "#/components/schemas/ErroResposta")))
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<UsuarioResponse> criar(@Valid @RequestBody UsuarioRequest requisicao) {
@@ -58,6 +82,14 @@ public class UsuarioController {
         return ResponseEntity.created(URI.create("/usuarios/" + criado.id())).body(criado);
     }
 
+    @Operation(summary = "Atualiza um usuário",
+            description = """
+                    O usuário pode editar o próprio cadastro, mas **só o ADMIN altera o papel**:
+                    sem essa checagem, qualquer conta se promoveria a administradora.
+                    """)
+    @ApiResponse(responseCode = "200", description = "Usuário atualizado")
+    @ApiResponse(responseCode = "409", description = "E-mail já usado por outro usuário",
+            content = @Content(schema = @Schema(ref = "#/components/schemas/ErroResposta")))
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN') or #id == principal.id")
     public ResponseEntity<UsuarioResponse> atualizar(
@@ -67,6 +99,9 @@ public class UsuarioController {
         return ResponseEntity.ok(usuarioService.atualizar(id, requisicao, autenticado.getId()));
     }
 
+    @Operation(summary = "Ativa ou desativa uma conta",
+            description = "Exclusivo do ADMIN. Conta desativada não consegue autenticar.")
+    @ApiResponse(responseCode = "200", description = "Situação da conta alterada")
     @PatchMapping("/{id}/ativo")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<UsuarioResponse> alterarAtivo(

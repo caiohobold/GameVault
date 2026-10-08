@@ -43,8 +43,10 @@ gamevault:
 springdoc:
   swagger-ui:
     path: /swagger-ui.html
-    operations-sorter: method
     tags-sorter: alpha
+    doc-expansion: none
+    display-request-duration: true
+    persist-authorization: true
   api-docs:
     path: /v3/api-docs
 

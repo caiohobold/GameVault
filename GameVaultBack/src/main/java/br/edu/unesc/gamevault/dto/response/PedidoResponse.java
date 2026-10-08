@@ -5,7 +5,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import br.edu.unesc.gamevault.entity.enums.StatusPedido;
+import io.swagger.v3.oas.annotations.media.Schema;
 
+@Schema(description = "Pedido com seus itens. O valorTotal é calculado no servidor")
 public record PedidoResponse(
         Long id,
         UsuarioResumoResponse usuario,
