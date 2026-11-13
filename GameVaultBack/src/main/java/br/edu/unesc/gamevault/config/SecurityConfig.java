@@ -55,6 +55,12 @@ public class SecurityConfig {
                         // Precisa vir antes do GET /jogos/*, senão /jogos/meus cairia na regra pública
                         .requestMatchers(HttpMethod.GET, "/jogos/meus", "/jogos/meus/vendas").authenticated()
 
+                        // Módulos de IA públicos: busca em linguagem natural, jogos similares e resumo
+                        // das avaliações. A busca vem explícita antes do GET /jogos/* por clareza.
+                        .requestMatchers(HttpMethod.GET, "/jogos/busca", "/jogos/*/similares",
+                                "/jogos/*/avaliacoes/resumo")
+                        .permitAll()
+
                         // Catálogo é público: vitrine da loja
                         .requestMatchers(HttpMethod.GET, "/jogos", "/jogos/*", "/jogos/*/avaliacoes",
                                 "/categorias", "/categorias/*", "/promocoes", "/promocoes/*")

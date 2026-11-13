@@ -1,0 +1,78 @@
+{
+  "_sobre": "Textos de avaliacao para o banco de demonstracao. Gerados uma unica vez com o Claude e versionados, para o script nao depender da API. 'ofensivos' e 'spoilers' existem para demonstrar a moderacao.",
+  "positivos": [
+    "Comprei sem muita expectativa e não consegui largar. Vale cada centavo.",
+    "A história me prendeu do início ao fim, e a trilha sonora é linda.",
+    "Jogabilidade muito gostosa, os controles respondem bem e a curva de dificuldade é justa.",
+    "Gráficos caprichados e roda liso até no meu notebook antigo.",
+    "Um dos melhores que joguei este ano. Recomendo demais.",
+    "Joguei com dois amigos e foram as melhores noites de jogatina em muito tempo.",
+    "Parece simples no começo, mas tem muita profundidade nas mecânicas.",
+    "A direção de arte é maravilhosa, cada cenário parece uma pintura.",
+    "Ótimo custo-benefício, ainda mais pegando na promoção.",
+    "Os desenvolvedores claramente se importam: as atualizações só melhoram o jogo.",
+    "Fazia tempo que um jogo não me deixava tão tenso. Atmosfera impecável.",
+    "Muito conteúdo para o preço, já passei das 60 horas e ainda tem coisa para fazer.",
+    "Chefões difíceis mas justos, a sensação de vencer cada um é ótima.",
+    "Viciante. Era para jogar uma partida rápida e quando vi já era de madrugada.",
+    "Personagens carismáticos e diálogos muito bem escritos.",
+    "Dá para jogar no ritmo que quiser, ótimo para relaxar depois do trabalho.",
+    "A trilha sonora sozinha já valeria o preço. Jogo excelente.",
+    "Multiplayer sem lag e com partidas bem equilibradas.",
+    "Que surpresa boa! Estúdio pequeno fazendo um trabalho enorme.",
+    "Rejogável demais, cada partida é diferente da outra.",
+    "Recomendo para quem gosta do gênero e também para quem nunca jogou.",
+    "Tutorial bem feito, aprendi rápido e logo estava me divertindo.",
+    "Gameplay redonda, sem bugs que eu tenha encontrado.",
+    "Comprei para jogar com meu filho e nós dois adoramos.",
+    "Melhor compra que fiz na loja até agora."
+  ],
+  "neutros": [
+    "É um jogo bom, mas não traz nada de muito novo para o gênero.",
+    "Diverte por algumas horas, depois fica repetitivo.",
+    "Gráficos bonitos, mas a história é fraca.",
+    "Gostei, mas achei caro pelo tanto de conteúdo. Esperaria uma promoção.",
+    "Começa devagar, melhora bastante depois da metade.",
+    "Tem boas ideias, só precisava de mais polimento.",
+    "A jogabilidade é boa, mas o desempenho cai em algumas áreas.",
+    "Nem bom nem ruim, cumpre o que promete.",
+    "Legal para jogar com amigos, sozinho perde um pouco da graça.",
+    "A dificuldade oscila muito, tem trechos fáceis demais e outros injustos.",
+    "Bom passatempo, mas não é um jogo que vou lembrar daqui a um ano.",
+    "Trilha sonora ótima, jogabilidade só ok."
+  ],
+  "negativos": [
+    "Otimização péssima, no meu PC roda a 20 fps mesmo no mínimo.",
+    "Travou três vezes na mesma fase e perdi o progresso. Frustrante.",
+    "Muito caro para o pouco conteúdo que oferece.",
+    "Jogo roubado: o último chefe é desequilibrado e não tem graça nenhuma.",
+    "A história promete muito e entrega pouco.",
+    "Cheio de bugs. Não recomendo até saírem correções.",
+    "Controles travados e câmera ruim, desisti em duas horas.",
+    "Repetitivo demais, fiz a mesma missão vinte vezes.",
+    "Servidores sempre caindo, o multiplayer é quase injogável.",
+    "Achei chato. Comprei pela propaganda e me arrependi.",
+    "Lixo de otimização, devolvam meu dinheiro.",
+    "Os gráficos são bonitos mas o jogo em si é vazio.",
+    "Loading eterno entre as fases, mata o ritmo do jogo.",
+    "Dificuldade artificial, o jogo só fica difícil porque os controles não respondem."
+  ],
+  "ofensivos": [
+    "Quem fez esse jogo é um idiota completo, não sabe programar nada.",
+    "Compre chaves mais baratas no meu site, link no meu perfil, preço muito menor.",
+    "Os jogadores que deram nota alta são todos uns imbecis.",
+    "Me chama no zap 48 99999-0000 que eu vendo conta com tudo liberado."
+  ],
+  "spoilers": [
+    "Chorei quando o mentor morre no último capítulo, que final!",
+    "Não acredito que o vilão era o irmão do protagonista o tempo todo. Reviravolta incrível.",
+    "O final em que a protagonista escolhe ficar no farol é lindo e triste."
+  ],
+  "fraude": [
+    "Horrível.",
+    "Não comprem.",
+    "Pior jogo da loja.",
+    "Péssimo, nota 1.",
+    "Lixo total."
+  ]
+}

@@ -39,6 +39,35 @@ gamevault:
     expiracao: ${JWT_EXPIRACAO:86400000}
   cors:
     origens: ${CORS_ORIGINS:http://localhost:5173}
+  ia:
+    # Claude (API da Anthropic). Sem chave, os modulos de linguagem respondem 503
+    # e a moderacao manda as avaliacoes para revisao humana.
+    habilitada: ${IA_HABILITADA:true}
+    chave-api: ${ANTHROPIC_API_KEY:}
+    modelo: ${IA_MODELO:claude-opus-5-5}
+    # Troca de modelo por modulo, ex.: MODERACAO: claude-haiku-5-5
+    modelos: {}
+    timeout-segundos: 60
+    max-tentativas: 2
+    # Preco do modelo padrao em US$ por milhao de tokens, usado no relatorio de uso
+    preco-entrada-por-milhao: 4.00
+    preco-saida-por-milhao: 20.00
+    preco-cache-leitura-por-milhao: 0.20
+    limite-por-hora:
+      chat: 30
+      assistente-cadastro: 20
+    recomendacao:
+      cron: ${IA_CRON_RECOMENDACAO:0 0 3 * * *}
+    demanda:
+      cron: ${IA_CRON_DEMANDA:0 30 3 * * *}
+    fraude:
+      cron: ${IA_CRON_FRAUDE:0 0 4 * * *}
+    resumo:
+      minimo-avaliacoes: 3
+      novas-para-refazer: 10
+  ml:
+    url: ${ML_URL:http://localhost:8000}
+    timeout-segundos: ${ML_TIMEOUT_SEGUNDOS:120}
 
 springdoc:
   swagger-ui:

@@ -3,6 +3,7 @@ package br.edu.unesc.gamevault.service;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
@@ -43,6 +44,22 @@ public class PromocaoService {
     @Transactional(readOnly = true)
     public Page<PromocaoResponse> listarTodas(Pageable paginacao) {
         return promocaoRepository.findAll(paginacao).map(promocaoMapper::paraResposta);
+    }
+
+    /** Promoções valendo agora, de jogos ativos, da maior para a menor. */
+    @Transactional(readOnly = true)
+    public List<PromocaoResponse> listarVigentes() {
+        return promocaoRepository.buscarTodasVigentes(LocalDateTime.now()).stream()
+                .map(promocaoMapper::paraResposta)
+                .toList();
+    }
+
+    /** Percentual da promoção vigente do jogo no momento, ou zero. */
+    @Transactional(readOnly = true)
+    public int percentualVigente(Long jogoId, LocalDateTime momento) {
+        return promocaoRepository.buscarVigente(jogoId, momento)
+                .map(Promocao::getPercentualDesconto)
+                .orElse(0);
     }
 
     @Transactional(readOnly = true)

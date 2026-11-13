@@ -56,6 +56,23 @@ public class GlobalExceptionHandler {
         return construir(HttpStatus.CONFLICT, "Recurso duplicado", excecao.getMessage(), requisicao);
     }
 
+    @ExceptionHandler(IaIndisponivelException.class)
+    public ResponseEntity<ErroResposta> tratarIaIndisponivel(
+            IaIndisponivelException excecao, HttpServletRequest requisicao) {
+        log.warn("IA indisponivel em {}: {}", requisicao.getRequestURI(), excecao.getMessage());
+
+        return construir(HttpStatus.SERVICE_UNAVAILABLE, "IA indisponível", excecao.getMessage(), requisicao);
+    }
+
+    @ExceptionHandler(LimiteDeUsoExcedidoException.class)
+    public ResponseEntity<ErroResposta> tratarLimiteDeUso(
+            LimiteDeUsoExcedidoException excecao, HttpServletRequest requisicao) {
+        log.warn("Limite de uso excedido em {}: {}", requisicao.getRequestURI(), excecao.getMessage());
+
+        return construir(HttpStatus.TOO_MANY_REQUESTS, "Limite de uso excedido", excecao.getMessage(),
+                requisicao);
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErroResposta> tratarValidacao(
             MethodArgumentNotValidException excecao, HttpServletRequest requisicao) {

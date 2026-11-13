@@ -24,6 +24,7 @@ import br.edu.unesc.gamevault.dto.request.JogoRequest;
 import br.edu.unesc.gamevault.dto.response.AvaliacaoResponse;
 import br.edu.unesc.gamevault.dto.response.JogoResponse;
 import br.edu.unesc.gamevault.dto.response.VendaResponse;
+import br.edu.unesc.gamevault.ia.recomendacao.RecomendacaoService;
 import br.edu.unesc.gamevault.security.UsuarioAutenticado;
 import br.edu.unesc.gamevault.service.AvaliacaoService;
 import br.edu.unesc.gamevault.service.JogoService;
@@ -44,6 +45,7 @@ import lombok.RequiredArgsConstructor;
 public class JogoController {
     private final JogoService jogoService;
     private final AvaliacaoService avaliacaoService;
+    private final RecomendacaoService recomendacaoService;
 
     @Operation(summary = "Lista o catálogo",
             description = """
@@ -84,14 +86,22 @@ public class JogoController {
         return ResponseEntity.ok(jogoService.resumirVendas(autenticado.getId(), paginacao));
     }
 
-    @Operation(summary = "Detalha um jogo", description = "Rota pública.")
+    @Operation(summary = "Detalha um jogo",
+            description = "Rota pública. Com usuário logado, a visita alimenta as recomendações dele.")
     @ApiResponse(responseCode = "200", description = "Jogo encontrado")
     @ApiResponse(responseCode = "404", description = "Jogo inexistente", content = @Content(schema = @Schema(ref = "#/components/schemas/ErroResposta")))
     @SecurityRequirements
     @GetMapping("/{id}")
     public ResponseEntity<JogoResponse> buscarPorId(
-            @Parameter(description = "Identificador do jogo", example = "1") @PathVariable Long id) {
-        return ResponseEntity.ok(jogoService.buscarPorId(id));
+            @Parameter(description = "Identificador do jogo", example = "1") @PathVariable Long id,
+            @AuthenticationPrincipal UsuarioAutenticado autenticado) {
+        JogoResponse jogo = jogoService.buscarPorId(id);
+
+        if (autenticado != null) {
+            recomendacaoService.registrarVisualizacao(autenticado.getId(), id);
+        }
+
+        return ResponseEntity.ok(jogo);
     }
 
     @Operation(summary = "Lista as avaliações de um jogo", description = "Rota pública e paginada.")

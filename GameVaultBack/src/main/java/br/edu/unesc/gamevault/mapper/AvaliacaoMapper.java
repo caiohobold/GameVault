@@ -19,6 +19,9 @@ public class AvaliacaoMapper {
                 jogoMapper.paraResumo(avaliacao.getJogo()),
                 avaliacao.getNota(),
                 avaliacao.getComentario(),
-                avaliacao.getDataAvaliacao());
+                avaliacao.getDataAvaliacao(),
+                avaliacao.getStatusModeracao(),
+                avaliacao.getMotivoModeracao(),
+                avaliacao.getContemSpoiler());
     }
 }

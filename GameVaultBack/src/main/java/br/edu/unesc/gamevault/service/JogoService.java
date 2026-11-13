@@ -3,8 +3,14 @@ package br.edu.unesc.gamevault.service;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -17,6 +23,7 @@ import br.edu.unesc.gamevault.entity.Categoria;
 import br.edu.unesc.gamevault.entity.Jogo;
 import br.edu.unesc.gamevault.entity.Usuario;
 import br.edu.unesc.gamevault.entity.enums.Role;
+import br.edu.unesc.gamevault.evento.JogoSalvoEvento;
 import br.edu.unesc.gamevault.exception.AcessoNegadoException;
 import br.edu.unesc.gamevault.exception.RecursoNaoEncontradoException;
 import br.edu.unesc.gamevault.exception.RegraDeNegocioException;
@@ -35,6 +42,7 @@ public class JogoService {
     private final UsuarioService usuarioService;
     private final CategoriaService categoriaService;
     private final JogoMapper jogoMapper;
+    private final ApplicationEventPublisher publicadorDeEventos;
 
     @Transactional(readOnly = true)
     public Page<JogoResponse> listar(String titulo, Long categoriaId, Pageable paginacao) {
@@ -82,6 +90,9 @@ public class JogoService {
         log.info("Jogo criado: id={} titulo={} publicadora={}", jogo.getId(), jogo.getTitulo(),
                 publicadora.getId());
 
+        // Depois do commit, o módulo de busca gera o embedding do jogo novo
+        publicadorDeEventos.publishEvent(new JogoSalvoEvento(jogo.getId()));
+
         return jogoMapper.paraResposta(jogo);
     }
 
@@ -103,6 +114,7 @@ public class JogoService {
         jogo.getCategorias().addAll(carregarCategorias(requisicao.categoriaIds()));
 
         log.info("Jogo atualizado: id={}", id);
+        publicadorDeEventos.publishEvent(new JogoSalvoEvento(jogo.getId()));
         return jogoMapper.paraResposta(jogo);
     }
 
@@ -149,6 +161,39 @@ public class JogoService {
         jogo.setTotalAvaliacoes((int) total);
 
         log.debug("Estatisticas do jogo {} recalculadas: media={} total={}", jogoId, notaMedia, total);
+    }
+
+    /**
+     * Carrega vários jogos de uma vez mantendo a ordem dos ids (a ordem de relevância
+     * da busca ou da recomendação). Ids inexistentes são ignorados.
+     */
+    @Transactional(readOnly = true)
+    public List<JogoResponse> buscarRespostasPorIds(List<Long> ids) {
+        if (ids.isEmpty()) {
+            return List.of();
+        }
+
+        Map<Long, Jogo> porId = jogoRepository.findAllById(ids).stream()
+                .collect(Collectors.toMap(Jogo::getId, Function.identity()));
+
+        return ids.stream()
+                .map(porId::get)
+                .filter(Objects::nonNull)
+                .map(jogoMapper::paraResposta)
+                .toList();
+    }
+
+    /** Jogo que o solicitante pode administrar: a publicadora dona dele ou um ADMIN (RN09). */
+    @Transactional(readOnly = true)
+    public Jogo buscarEntidadeDoDono(Long jogoId, Long solicitanteId) {
+        Jogo jogo = buscarEntidade(jogoId);
+        validarDono(jogo, solicitanteId);
+        return jogo;
+    }
+
+    @Transactional(readOnly = true)
+    public List<Jogo> listarEntidadesDaPublicadora(Long publicadoraId) {
+        return jogoRepository.findByPublicadora_IdOrderByTitulo(publicadoraId);
     }
 
     @Transactional(readOnly = true)

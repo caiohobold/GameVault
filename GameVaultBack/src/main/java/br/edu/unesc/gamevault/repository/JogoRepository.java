@@ -1,5 +1,6 @@
 package br.edu.unesc.gamevault.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
@@ -22,6 +23,8 @@ public interface JogoRepository extends JpaRepository<Jogo, Long> {
     Page<Jogo> findByPublicadora_Id(Long publicadoraId, Pageable paginacao);
 
     Optional<Jogo> findByIdAndAtivoTrue(Long id);
+
+    List<Jogo> findByPublicadora_IdOrderByTitulo(Long publicadoraId);
 
     @Query("select j from Jogo j left join fetch j.categorias where j.id = :id")
     Optional<Jogo> buscarComCategorias(@Param("id") Long id);

@@ -30,4 +30,15 @@ public interface PromocaoRepository extends JpaRepository<Promocao, Long> {
             """)
     Optional<Promocao> buscarVigente(@Param("jogoId") Long jogoId,
             @Param("momento") LocalDateTime momento);
+
+    @Query("""
+            select p from Promocao p
+              join fetch p.jogo j
+             where p.ativa = true
+               and j.ativo = true
+               and p.dataInicio <= :momento
+               and p.dataFim > :momento
+             order by p.percentualDesconto desc
+            """)
+    List<Promocao> buscarTodasVigentes(@Param("momento") LocalDateTime momento);
 }

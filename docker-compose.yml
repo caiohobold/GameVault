@@ -1,6 +1,7 @@
 services:
   postgres:
-    image: postgres:16-alpine
+    # Mesma versao do PostgreSQL, com a extensao pgvector (embeddings dos jogos)
+    image: pgvector/pgvector:pg16
     container_name: gamevault-db
     restart: unless-stopped
     environment:
@@ -16,6 +17,24 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+
+  ml:
+    build: ./GameVaultML
+    container_name: gamevault-ml
+    restart: unless-stopped
+    environment:
+      ML_DB_HOST: postgres
+      ML_DB_PORT: 5432
+      ML_DB_NAME: ${POSTGRES_DB:-gamevault}
+      ML_DB_USER: ${POSTGRES_USER:-gamevault}
+      ML_DB_PASSWORD: ${POSTGRES_PASSWORD:-gamevault}
+    ports:
+      - "127.0.0.1:${ML_PORT:-8000}:8000"
+    volumes:
+      - gamevault-ml-modelos:/root/.cache
+    depends_on:
+      postgres:
+        condition: service_healthy
 
   pgadmin:
     image: dpage/pgadmin4:latest
@@ -34,3 +53,4 @@ services:
 
 volumes:
   gamevault-pgdata:
+  gamevault-ml-modelos:

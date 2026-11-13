@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import br.edu.unesc.gamevault.entity.Avaliacao;
+import br.edu.unesc.gamevault.entity.enums.StatusModeracao;
 
 @Repository
 public interface AvaliacaoRepository extends JpaRepository<Avaliacao, Long> {
@@ -23,6 +24,13 @@ public interface AvaliacaoRepository extends JpaRepository<Avaliacao, Long> {
 
     long countByJogo_Id(Long jogoId);
 
-    @Query("select avg(a.nota) from Avaliacao a where a.jogo.id = :jogoId")
-    Double calcularMediaDoJogo(@Param("jogoId") Long jogoId);
+    Page<Avaliacao> findByJogo_IdAndStatusModeracao(Long jogoId, StatusModeracao status, Pageable paginacao);
+
+    Page<Avaliacao> findByStatusModeracao(StatusModeracao status, Pageable paginacao);
+
+    long countByJogo_IdAndStatusModeracao(Long jogoId, StatusModeracao status);
+
+    /** Média só das avaliações aprovadas: em revisão ou bloqueadas não contam (RN08). */
+    @Query("select avg(a.nota) from Avaliacao a where a.jogo.id = :jogoId and a.statusModeracao = :status")
+    Double calcularMediaDoJogo(@Param("jogoId") Long jogoId, @Param("status") StatusModeracao status);
 }
